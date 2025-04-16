@@ -16,7 +16,8 @@ SCOPES = ['https://www.googleapis.com/auth/drive']
 service = None
 creds = None
 allFoldersFound = []
-foldersToCheck = [{'id':'1_23sgIonMLA_DxY3u_75tL97KseKpS5m', 'path': None}]
+# use 'root' for id to search root folder
+foldersToCheck = [{'id':'root', 'path': None}]
 allFilesFound = []
 
 
@@ -50,8 +51,6 @@ def listFolders(target, nextPageToken=None, prevRequest=None):
     if nextPageToken is not None:
         listFolders(target, nextPageToken, request)
         return
-    while len(foldersToCheck) > 0:
-        listFolders(foldersToCheck.pop())
 
 
 def listFiles(target, nextPageToken=None, prevRequest=None):
@@ -62,9 +61,9 @@ def listFiles(target, nextPageToken=None, prevRequest=None):
             prevRequest, {"nextPageToken": nextPageToken})
     else:
         request = service.files().list(
-            pageSize=10,
+            pageSize=20,
             fields="nextPageToken, files(id, name)",
-            q=f"'{target['id']}' in parents and (mimeType contains 'image/' or mimeType contains 'video/')",
+            q=f"'{target['id']}' in parents and mimeType != 'application/vnd.google-apps.folder'",
         )
     results = request.execute()
     files = results.get('files', [])
@@ -117,12 +116,12 @@ def getOldestRevision(file, nextPageToken=None, prevRequest=None):
 
 
 def downloadFile(file, revisionId):
-    serviceV2 = build('drive', 'v2', credentials=creds)
+    global service
+    # serviceV2 = build('drive', 'v2', credentials=creds)
     # request = service.files().get_media(fileId=file['id'])
-    request = serviceV2.revisions().get(fileId=file['id'], revisionId=revisionId)
-    res = request.execute()
-    request.uri = res.get('downloadUrl')
-    # fh = io.FileIO(f"{file['name']}", mode='w+b')
+    request = service.revisions().get_media(fileId=file['id'], revisionId=revisionId)
+    # res = request.execute()
+    # request.uri = res.get('downloadUrl')
     fh = io.BytesIO()
     downloader = MediaIoBaseDownload(fh, request)
 
@@ -163,17 +162,18 @@ def main():
         global service, allFilesFound, allFoldersFound
         service = build('drive', 'v3', credentials=creds)
         allFoldersFound = [{'id': foldersToCheck[0]['id'], 'path': f"{os.curdir}{os.sep}downloads"}]
-        listFolders(foldersToCheck.pop())
+        # while len(foldersToCheck) > 0:
+        #     listFolders(foldersToCheck.pop())
         for folder in allFoldersFound:
             listFiles(folder)
         for file in allFilesFound:
-            getOldestRevision(file)
-    
+            getOldestRevision(file)    
 
         # await listFiles(authClient, foldersToCheck.shift())
     except HttpError as error:
         # TODO(developer) - Handle errors from drive API.
         print(f'An error occurred: {error}')
+        pass
 
 
 if __name__ == '__main__':
