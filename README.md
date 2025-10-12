@@ -1,6 +1,6 @@
 # Get started
 
-(Create venv): `python3 -m venv --version` \
+(Create venv): `python3 -m venv dev` \
 Start the venv: `. dev/bin/activate` \
 (install dependencies: `pip install -r requirements.txt`)
 
