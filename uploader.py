@@ -1,20 +1,18 @@
 from __future__ import print_function
 
+import mimetypes
 import os.path
+from datetime import datetime, timezone
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
-from googleapiclient.discovery import build, Resource
+from googleapiclient.discovery import Resource, build
 from googleapiclient.errors import HttpError
-from datetime import datetime, timezone
-
-from authed_service import getService
-import mimetypes
 from googleapiclient.http import MediaFileUpload
 
+from authed_service import getService
 from file_sorter import createFolderIfNotExists
-
 
 service: Resource = None
 
@@ -43,7 +41,8 @@ def uploadFiles(folder_path, parent_folder_id):
             # gathering files/folders from subfolders happens in recursion. not optimal, idc
             continue
 
-        # we just lazily assume it's not too deep. freely recurse on folders
+        folders.sort()
+
         for folder in folders:
             local_path = os.path.join(root, folder)
             next_parent = createFolderIfNotExists(
@@ -51,6 +50,7 @@ def uploadFiles(folder_path, parent_folder_id):
             uploadFiles(local_path, next_parent)
             continue
 
+        files.sort()
         for fname in files:
             local_path = os.path.join(root, fname)
 

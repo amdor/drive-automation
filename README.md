@@ -22,6 +22,7 @@ Folders 1-12 are automatically created.
 `folder_path` the path locally to look for files and folder in for
 `drive_folder_id` the drive root folder ID (the last part of the URL opening the target folder)
 Uploads all files and folders from `folder_path` to `drive_folder_id`, recursively.
+In Drive, when you upload a file with the same name (image.png) as one already existing there, then there will be 2 instances of that file. They'll have a unique id, but their name will be the same (image.png both). When you download both files they'll get suffixes automatically (image.png, image(1).png).
 
 # file_sorter.py
 
@@ -34,3 +35,9 @@ Sorts files of your drive folders by their creation month.
 # recoverer.py
 
 Recovers files to their first version, so the version at upload.
+
+
+
+# Errors:
+> Token has been expired or revoked.
+Delete token.json
