@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Privacy Policy | Drive Batch Organizer</title>
+		<link rel="stylesheet" href="styles.css" />
+	</head>
+	<body>
+		<header class="topbar">
+			<a class="wordmark" href="index.html" aria-label="Drive Batch Organizer home">
+				<img class="brand-image" src="drive-extension.png" alt="Drive Batch Organizer logo" />
+				<span>Drive <strong>Batch</strong></span>
+			</a>
+			<div class="topbar-meta"><span class="status-light"></span><span>Privacy policy</span></div>
+		</header>
+
+		<main class="policy-page">
+			<section class="policy-card" aria-labelledby="policy-title">
+				<h1 id="policy-title">Privacy Policy</h1>
+				<p>
+					Drive Batch Organizer is designed to help you select local photos and videos, organize them, and
+					upload them to your Google Drive account. We respect your privacy and we keep the app minimal and
+					local-first.
+				</p>
+
+				<h2>Information we access</h2>
+				<ul>
+					<li>Google Drive account access only when you choose to connect the extension.</li>
+					<li>Your selected local files and folders only while you pick a directory and run the upload.</li>
+					<li>
+						Metadata needed for the upload workflow, such as file names, sizes, creation dates, and
+						resumable upload progress.
+					</li>
+				</ul>
+
+				<h2>How we use the information</h2>
+				<p>
+					The extension uses Google OAuth and the Google Drive API to create folders in your Drive account and
+					upload selected media files. It does not use your data for advertising, analytics, profiling, or
+					resale. The app stores queue state locally in your browser profile so a transfer can resume.
+				</p>
+
+				<h2>Local storage</h2>
+				<p>
+					The extension stores session and queue information in the browser's local IndexedDB storage on your
+					device. This is used for resumable uploads and retry flows. It does not send that metadata to any
+					third-party service except the Google Drive API when you actively upload files.
+				</p>
+
+				<h2>Google account data</h2>
+				<p>
+					When you connect Drive, Chrome's identity API obtains an OAuth access token for the Drive API. That
+					token is used only to create folders and upload files. We do not collect or sell your Google account
+					data.
+				</p>
+
+				<h2>Changes</h2>
+				<p>
+					This policy may be updated if the app's functionality changes. Any material changes will be posted
+					in this page and in the extension update notes.
+				</p>
+
+				<h2>Contact</h2>
+				<p>
+					If you have questions about this privacy policy, contact the extension publisher through the Chrome
+					Web Store listing or the support contact provided for the published extension.
+				</p>
+			</section>
+		</main>
+	</body>
+</html>

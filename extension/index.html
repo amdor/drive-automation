@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Drive Batch Organizer</title>
+		<link rel="stylesheet" href="styles.css" />
+	</head>
+	<body>
+		<header class="topbar">
+			<a class="wordmark" href="#" aria-label="Drive Batch Organizer home">
+				<img class="brand-image" src="drive-extension.png" alt="Drive Batch Organizer logo" />
+				<span>Drive <strong>Batch</strong></span>
+			</a>
+			<div class="topbar-meta">
+				<span class="status-light"></span><span id="connection-label">Local queue ready</span>
+				<button id="connect-drive" class="connect-button" type="button">Connect Drive</button>
+			</div>
+		</header>
+
+		<section id="landing-screen" class="landing-screen" aria-live="polite" aria-label="Google Drive connection">
+			<div class="landing-card">
+				<img class="landing-logo" src="drive-extension.png" alt="Drive Batch Organizer" />
+				<h2>Connect to Google Drive</h2>
+				<p>
+					This is the first step required to use the app. Once connected, you can choose a folder, scan it,
+					and upload your media to Drive.
+				</p>
+				<p id="landing-status" class="landing-status" role="status" aria-live="polite"></p>
+				<button id="landing-connect" class="button button-primary" type="button">Connect to Drive</button>
+			</div>
+		</section>
+
+		<main id="workspace-app" class="workspace-app" hidden>
+			<section class="intro" aria-labelledby="page-title">
+				<h1 id="page-title">Sort once.<br /><em>Upload with confidence.</em></h1>
+				<p class="intro-copy">
+					Choose a local directory, shape the destination, and let a resumable queue do the long work.
+				</p>
+			</section>
+
+			<section class="workspace" aria-label="Batch configuration and queue">
+				<div class="controls">
+					<div class="section-heading">
+						<span class="step">01</span>
+						<h2>Source &amp; destination</h2>
+					</div>
+					<button id="choose-directory" class="directory-picker" type="button">
+						<span class="folder-icon" aria-hidden="true">▱</span>
+						<span class="picker-copy"
+							><strong id="directory-name">Choose a source directory</strong
+							><small id="directory-detail">Nothing is moved or changed locally</small></span
+						>
+						<span class="picker-action">Browse</span>
+					</button>
+
+					<label class="field-label" for="destination-name">Drive destination folder</label>
+					<div class="input-wrap">
+						<span aria-hidden="true">↗</span
+						><input
+							id="destination-name"
+							maxlength="120"
+							value="Drive Batch Organizer"
+							autocomplete="off"
+						/>
+					</div>
+					<p class="field-note">
+						A folder with this name is created in your Drive, then reused for this session.
+					</p>
+
+					<div class="section-heading rules-heading">
+						<span class="step">02</span>
+						<h2>Organization rules</h2>
+					</div>
+					<div class="rule-grid">
+						<label class="select-field"
+							><span>Categorize by</span
+							><select id="category-rule">
+								<option value="year-month">Creation month · YYYY-MM</option>
+								<option value="month">Creation month · 1–12</option>
+								<option value="none">No subfolders</option>
+							</select></label
+						>
+						<label class="select-field"
+							><span>Rename files</span
+							><select id="rename-rule">
+								<option value="original">Keep original name</option>
+								<option value="date-prefix">Creation date + original</option>
+								<option value="exact-date">Exact creation date</option>
+							</select></label
+						>
+					</div>
+					<div class="action-row">
+						<button id="scan-button" class="button button-secondary" type="button" disabled>
+							<span aria-hidden="true">⌕</span> Scan directory
+						</button>
+						<button id="run-button" class="button button-primary" type="button" disabled>
+							<span aria-hidden="true">↑</span> Start upload
+						</button>
+					</div>
+					<p id="message" class="message" role="status" aria-live="polite">Select a directory to begin.</p>
+				</div>
+
+				<aside class="queue-panel" aria-labelledby="queue-title">
+					<div class="section-heading queue-heading">
+						<span class="step">03</span>
+						<h2 id="queue-title">Transfer queue</h2>
+						<span id="queue-count" class="queue-count">0 files</span>
+					</div>
+					<div class="progress-summary">
+						<div class="progress-numbers">
+							<strong id="progress-value">0%</strong><span id="progress-detail">Waiting for a scan</span>
+						</div>
+						<div
+							class="progress-track"
+							role="progressbar"
+							aria-label="Batch progress"
+							aria-valuemin="0"
+							aria-valuemax="100"
+							aria-valuenow="0"
+						>
+							<span id="progress-bar"></span>
+						</div>
+					</div>
+					<div class="queue-stats" aria-label="Queue status">
+						<div><strong id="pending-count">0</strong><span>Pending</span></div>
+						<div><strong id="active-count">0</strong><span>Active</span></div>
+						<div><strong id="done-count">0</strong><span>Done</span></div>
+						<div><strong id="failed-count">0</strong><span>Failed</span></div>
+					</div>
+					<div class="queue-list-wrap">
+						<div class="list-label">
+							<span>FILES</span><span id="session-label">NO ACTIVE SESSION</span>
+						</div>
+						<ol id="queue-list" class="queue-list">
+							<li class="empty-state">Scanned files will appear here.</li>
+						</ol>
+					</div>
+					<div class="recovery-note">
+						<span class="recovery-icon" aria-hidden="true">↻</span>
+						<p>
+							<strong>Resume-ready queue</strong><br />Progress is saved locally as each file moves
+							through the batch.
+						</p>
+					</div>
+				</aside>
+			</section>
+			<footer>
+				<span>Drive Batch Organizer</span>
+				<span>Files stay on your device until uploaded.</span>
+				<a href="privacy-policy.html">Privacy Policy</a>
+			</footer>
+		</main>
+		<script type="module" src="app.js"></script>
+	</body>
+</html>

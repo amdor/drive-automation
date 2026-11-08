@@ -1,0 +1,24 @@
+{
+	"manifest_version": 3,
+	"name": "Drive Batch Organizer",
+	"version": "0.1.0",
+	"description": "Organize and upload local photos and videos to Google Drive in resumable batches.",
+	"icons": {
+		"16": "drive-extension.png",
+		"48": "drive-extension.png",
+		"128": "drive-extension.png"
+	},
+	"permissions": ["identity"],
+	"host_permissions": ["https://www.googleapis.com/*"],
+	"oauth2": {
+		"client_id": "742099015978-3t9cr0oqga72hib3h5rtlharftqvngjl.apps.googleusercontent.com",
+		"scopes": ["https://www.googleapis.com/auth/drive.file"]
+	},
+	"background": {
+		"service_worker": "background.js"
+	},
+	"options_page": "index.html",
+	"action": {
+		"default_title": "Open Drive Batch Organizer"
+	}
+}

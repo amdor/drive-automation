@@ -2,3 +2,6 @@ node_modules
 downloads
 credentials.json
 token.json
+extension.pem
+extension.crx
+drive-batch-organizer-extension.zip

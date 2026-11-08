@@ -41,3 +41,7 @@ Recovers files to their first version, so the version at upload.
 # Errors:
 > Token has been expired or revoked.
 Delete token.json
+
+## Chrome Web Store checklist
+
+Before publishing the extension, add a public privacy policy URL in the Chrome Web Store listing. A copy of the policy is included at `extension/privacy-policy.html` and can be linked from the store page to satisfy the requirement.
