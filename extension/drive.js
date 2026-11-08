@@ -8,6 +8,18 @@ function escapeQuery(value) {
 	return value.replaceAll("\\", "\\\\").replaceAll("'", "\\'");
 }
 
+function numberedFileName(baseName, number) {
+	if (number === 0) return baseName;
+	const extensionIndex = baseName.lastIndexOf(".");
+	const extension = extensionIndex > 0 ? baseName.slice(extensionIndex) : "";
+	const stem = extension ? baseName.slice(0, extensionIndex) : baseName;
+	return `${stem}-${number}${extension}`;
+}
+
+function looksLikeDriveFolderId(value) {
+	return /^[A-Za-z0-9_-]{20,}$/.test(value);
+}
+
 async function requestJson(url, token, options = {}) {
 	const response = await fetch(url, {
 		...options,
@@ -43,6 +55,25 @@ async function ensureFolder(session, path, token) {
 
 async function ensureRootFolder(session, token) {
 	if (session.driveRootId) return session.driveRootId;
+	if (looksLikeDriveFolderId(session.destinationName)) {
+		let folder;
+		try {
+			folder = await requestJson(
+				`${DRIVE_API}/${encodeURIComponent(session.destinationName)}?fields=id,mimeType,trashed`,
+				token,
+			);
+		} catch (error) {
+			throw new Error(
+				`Could not access the Drive folder ID. Check the ID and your Drive access. ${error.message}`,
+			);
+		}
+		if (folder.mimeType !== "application/vnd.google-apps.folder" || folder.trashed)
+			throw new Error("The provided Drive ID is not an active folder.");
+		session.driveRootId = folder.id;
+		session.updatedAt = Date.now();
+		await saveSession(session);
+		return session.driveRootId;
+	}
 	const query = `name = '${escapeQuery(session.destinationName)}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`;
 	const found = await requestJson(
 		`${DRIVE_API}?q=${encodeURIComponent(query)}&fields=files(id,name)&pageSize=10`,
@@ -61,6 +92,29 @@ async function ensureRootFolder(session, token) {
 	return session.driveRootId;
 }
 
+async function ensureUniqueFileName(item, parentId, token) {
+	if (item.nameResolved) return;
+	const baseName = item.generatedNameBase ?? item.generatedName;
+	let number = item.generatedNameNumber ?? 0;
+	while (true) {
+		const name = numberedFileName(baseName, number);
+		const query = `name = '${escapeQuery(name)}' and '${parentId}' in parents and trashed = false`;
+		const found = await requestJson(
+			`${DRIVE_API}?q=${encodeURIComponent(query)}&fields=files(id)&pageSize=1`,
+			token,
+		);
+		if (!found.files.length) {
+			item.generatedName = name;
+			item.generatedNameNumber = number;
+			item.nameResolved = true;
+			item.updatedAt = Date.now();
+			await saveQueueItem(item);
+			return;
+		}
+		number += 1;
+	}
+}
+
 function parseNextOffset(response, fallback = 0) {
 	const range = response.headers.get("Range");
 	if (!range) return fallback;
@@ -69,6 +123,7 @@ function parseNextOffset(response, fallback = 0) {
 }
 
 async function startResumableUpload(item, parentId, token) {
+	await ensureUniqueFileName(item, parentId, token);
 	const response = await fetch(RESUMABLE_UPLOAD, {
 		method: "POST",
 		headers: {
@@ -79,6 +134,7 @@ async function startResumableUpload(item, parentId, token) {
 		},
 		body: JSON.stringify({
 			name: item.generatedName,
+			createdTime: item.creationDate,
 			parents: [parentId],
 			appProperties: { batchSignature: item.signatureHash },
 		}),
@@ -133,6 +189,7 @@ export async function uploadQueueItem(session, item, token, onProgress) {
 			if (status.expired) {
 				item.uploadUrl = null;
 				item.uploadOffset = 0;
+				item.nameResolved = false;
 				await startResumableUpload(item, parentId, token);
 			} else item.uploadOffset = status.offset;
 		} catch (error) {
@@ -154,6 +211,7 @@ export async function uploadQueueItem(session, item, token, onProgress) {
 			const status = await queryUploadStatus(item, token);
 			if (status.expired) {
 				item.uploadUrl = null;
+				item.nameResolved = false;
 				await startResumableUpload(item, parentId, token);
 				continue;
 			}

@@ -54,7 +54,25 @@
 						<span class="picker-action">Browse</span>
 					</button>
 
-					<label class="field-label" for="destination-name">Drive destination folder</label>
+					<div class="destination-label-row">
+						<label class="field-label" for="destination-name">Drive destination folder</label>
+						<button
+							id="destination-help-toggle"
+							class="help-button"
+							type="button"
+							aria-label="About destination folders"
+							aria-expanded="false"
+							aria-controls="destination-help"
+						>
+							?
+						</button>
+					</div>
+					<p id="destination-help" class="destination-help" hidden>
+						Enter a new folder name to create it in Drive's root, or paste an existing folder ID. To find
+						the ID, open the folder in Drive and copy the long value at the end of the browser URL after
+						<code>/folders/</code>. ID-shaped values are used directly; if Drive cannot access that folder,
+						the upload will show an error instead of creating a folder with that value as its name.
+					</p>
 					<div class="input-wrap">
 						<span aria-hidden="true">↗</span
 						><input
@@ -64,9 +82,7 @@
 							autocomplete="off"
 						/>
 					</div>
-					<p class="field-note">
-						A folder with this name is created in your Drive, then reused for this session.
-					</p>
+					<p class="field-note">Use an existing folder ID, or create a new folder by entering its name.</p>
 
 					<div class="section-heading rules-heading">
 						<span class="step">02</span>

@@ -275,6 +275,42 @@ h1 em {
 	font-size: 11px;
 	font-weight: 600;
 }
+.destination-label-row {
+	display: flex;
+	align-items: center;
+	gap: 7px;
+}
+.help-button {
+	width: 17px;
+	height: 17px;
+	display: inline-grid;
+	place-items: center;
+	padding: 0;
+	border: 1px solid #aebfb2;
+	border-radius: 50%;
+	color: var(--green);
+	background: #fff;
+	font: 600 10px var(--sans);
+	line-height: 1;
+	cursor: pointer;
+}
+.help-button:hover,
+.help-button:focus-visible {
+	border-color: var(--green);
+	background: #eff5ed;
+}
+.destination-help {
+	margin: 8px 0 0;
+	padding: 10px 12px;
+	border-left: 2px solid var(--green);
+	color: #526158;
+	background: #f3f7f1;
+	font-size: 11px;
+	line-height: 1.55;
+}
+.destination-help code {
+	font: 10px var(--mono);
+}
 .input-wrap {
 	display: flex;
 	align-items: center;

@@ -7,6 +7,8 @@ const elements = {
 	directoryName: document.querySelector("#directory-name"),
 	directoryDetail: document.querySelector("#directory-detail"),
 	destinationName: document.querySelector("#destination-name"),
+	destinationHelpToggle: document.querySelector("#destination-help-toggle"),
+	destinationHelp: document.querySelector("#destination-help"),
 	categoryRule: document.querySelector("#category-rule"),
 	renameRule: document.querySelector("#rename-rule"),
 	scanButton: document.querySelector("#scan-button"),
@@ -144,6 +146,13 @@ function generatedName(fileName, isoDate, rule) {
 	const stem = extension ? fileName.slice(0, extensionIndex) : fileName;
 	if (rule === "exact-date") return `${dateString}${extension}`;
 	return `${dateString}_${stem}${extension}`;
+}
+
+function numberedFileName(baseName, number) {
+	const extensionIndex = baseName.lastIndexOf(".");
+	const extension = extensionIndex > 0 ? baseName.slice(extensionIndex) : "";
+	const stem = extension ? baseName.slice(0, extensionIndex) : baseName;
+	return `${stem}-${number}${extension}`;
 }
 
 function categoryPath(isoDate, rule) {
@@ -338,13 +347,18 @@ elements.chooseDirectory.addEventListener("click", async () => {
 
 elements.connectButton.addEventListener("click", () => connectDrive({ interactive: true }));
 elements.landingConnect.addEventListener("click", () => connectDrive({ interactive: true }));
+elements.destinationHelpToggle.addEventListener("click", () => {
+	const expanded = elements.destinationHelpToggle.getAttribute("aria-expanded") === "true";
+	elements.destinationHelpToggle.setAttribute("aria-expanded", String(!expanded));
+	elements.destinationHelp.hidden = expanded;
+});
 
 elements.scanButton.addEventListener("click", async () => {
 	if (!requireDriveAccess()) return;
 	if (!activeSession?.directoryHandle || isBusy) return;
 	const destinationName = elements.destinationName.value.trim();
 	if (!destinationName) {
-		setMessage("Enter a Drive destination folder name before scanning.", "error");
+		setMessage("Enter a Drive folder ID or a new root folder name before scanning.", "error");
 		return;
 	}
 	const directoryHandle = activeSession.directoryHandle;
@@ -377,12 +391,14 @@ elements.scanButton.addEventListener("click", async () => {
 			const signatureHash = await fingerprint(file, relativePath);
 			const sourceName = file.name;
 			const destinationPath = categoryPath(creationDate, activeSession.categoryRule);
+			const outputName = generatedName(sourceName, creationDate, activeSession.renameRule);
 			const item = {
 				id: `${sessionId}:${relativePath}`,
 				sessionId,
 				relativePath,
 				sourceName,
-				generatedName: generatedName(sourceName, creationDate, activeSession.renameRule),
+				generatedName: outputName,
+				generatedNameBase: outputName,
 				destinationPath,
 				signatureHash,
 				signatureMethod: "SHA-256 of file metadata and sampled content",
@@ -412,6 +428,26 @@ elements.scanButton.addEventListener("click", async () => {
 			}
 		}
 		activeSession.status = "queued";
+		if (activeSession.renameRule === "exact-date") {
+			const filesByDate = new Map();
+			for (const item of queueItems) {
+				const dateKey = `${item.destinationPath}\0${dateParts(item.creationDate).dateString}`;
+				const sameDateFiles = filesByDate.get(dateKey) ?? [];
+				sameDateFiles.push(item);
+				filesByDate.set(dateKey, sameDateFiles);
+			}
+			for (const sameDateFiles of filesByDate.values()) {
+				if (sameDateFiles.length < 2) continue;
+				sameDateFiles.sort((left, right) => left.relativePath.localeCompare(right.relativePath));
+				for (let index = 0; index < sameDateFiles.length; index += 1) {
+					const item = sameDateFiles[index];
+					item.generatedNameNumber = index + 1;
+					item.generatedName = numberedFileName(item.generatedNameBase, item.generatedNameNumber);
+					item.updatedAt = Date.now();
+					await saveQueueItem(item);
+				}
+			}
+		}
 		activeSession.scanComplete = true;
 		activeSession.updatedAt = Date.now();
 		await saveSession(activeSession);
@@ -502,12 +538,13 @@ elements.runButton.addEventListener("click", async () => {
 			driveToken = null;
 			updateDriveConnection();
 			setMessage("Drive authorization expired. Start the upload again to reauthorize and resume.", "error");
-		} else if (hasUnfinished)
+		} else if (hasUnfinished) {
+			const failure = queueItems.find(item => item.status === "failed" && item.error)?.error;
 			setMessage(
-				"Some files failed. Start the upload again to retry; saved upload sessions will resume.",
+				`Some files failed.${failure ? ` ${failure}` : ""} Start the upload again to retry; saved upload sessions will resume.`,
 				"error",
 			);
-		else setMessage("Batch complete. All queued files are in Google Drive.", "success");
+		} else setMessage("Batch complete. All queued files are in Google Drive.", "success");
 	} catch (error) {
 		activeSession.status = "paused";
 		activeSession.updatedAt = Date.now();
